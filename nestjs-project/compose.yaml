@@ -4,13 +4,17 @@ services:
       context: .
       dockerfile: Dockerfile.dev
     ports:
-      - 3000:3000
+      - "3000:3000"
     volumes:
       - .:/home/node/app
     depends_on:
       db:
         condition: service_healthy
       mailpit:
+        condition: service_started
+      redis:
+        condition: service_healthy
+      minio:
         condition: service_started
 
   db:
@@ -33,4 +37,38 @@ services:
       - "1025:1025"
       - "8025:8025"
 
+  minio:
+    image: cgr.dev/chainguard/minio:latest
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
 
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  video-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    command: npm run start:worker:dev
+    volumes:
+      - .:/home/node/app
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_started
