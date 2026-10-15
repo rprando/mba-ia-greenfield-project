@@ -14,7 +14,7 @@ describe('AppController (e2e)', () => {
 
     app = moduleFixture.createNestApplication();
     await app.init();
-  });
+  }, 60000);
 
   afterAll(async () => {
     await app.close();

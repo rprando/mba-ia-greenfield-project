@@ -4,7 +4,13 @@
   "testEnvironment": "node",
   "testRegex": ".e2e-spec.ts$",
   "transform": {
-    "^.+\\.(t|j)s$": "ts-jest"
+    "^.+\\.(t|j)s$": [
+      "ts-jest",
+      {
+        "isolatedModules": true
+      }
+    ]
   },
-  "setupFiles": ["dotenv/config"]
+  "setupFiles": ["dotenv/config"],
+  "testTimeout": 60000
 }
